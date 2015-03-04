@@ -34,17 +34,17 @@ router.post('/user', function(req, res) {
   user.username = req.body.username; // required 
   user.mobilenumber = req.body.mobilenumber; // required
   if(!user.username || !user.mobilenumber){
-    res.json({"error":"Username and mobile number are required"});
+    res.json({"status":"error","message":"Username and mobile number are required"});
     return;
   }
   User.findOne({"username":user.username},function(err,testUser){
     if(testUser){
-      res.json({"error":"Username already exists"});
+      res.json({"status":"error","message":"Username already exists"});
       return;
     }
     User.findOne({"mobilenumber":user.mobilenumber},function(err,testUser){
       if(testUser){
-        res.json({"error":"Mobile number already exists"});
+        res.json({"status":"error","message":"Mobile number already exists"});
         return;
       }
 
@@ -67,7 +67,14 @@ router.post('/user', function(req, res) {
           delete usr.hashed_password;
           delete usr.salt;
           tools.sendSMS(user.mobilenumber,"Welcome to Triby!. Your code is " + user.code,function(response){
-            res.send({"status":"success", "user":usr});
+            if(response.status == "error"){
+              User.remove({"mobilenumber":user.mobilenumber},function(err){
+                res.json({"status":"error","error":response.message});
+                return;
+              });
+            }
+            else
+              res.send({"status":"success", "user":usr}); 
           });
         }
       });
