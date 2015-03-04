@@ -25,6 +25,20 @@ router.put('/user', middleware.requiresUser, function(req, res) {
     });  
 });
 
+// Login user with username/mobilenumber/status=1
+router.post('/user/login', function(req, res) {
+  User.findOne({"username":req.body.name,"mobilenumber":req.body.mobilenumber,"status":1},function(err,aUser){
+    if(err){
+      res.json({"status":"error","message":err});
+      return;
+    }
+    if(!aUser)
+      res.json({"status":"error","message":"Not logged"});
+    else
+      res.json({"status":"success","user":aUser});
+  });
+});
+
 //User create
 router.post('/user', function(req, res) {
    
