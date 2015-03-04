@@ -27,7 +27,7 @@ router.put('/user', middleware.requiresUser, function(req, res) {
 
 // Login user with username/mobilenumber/status=1
 router.post('/user/login', function(req, res) {
-  User.findOne({"username":req.body.name,"mobilenumber":req.body.mobilenumber,"status":1},function(err,aUser){
+  User.findOne({"username":req.body.username,"mobilenumber":req.body.mobilenumber,"status":1},function(err,aUser){
     if(err){
       res.json({"status":"error","message":err});
       return;
