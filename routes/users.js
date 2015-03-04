@@ -83,7 +83,7 @@ router.post('/user', function(req, res) {
           tools.sendSMS(user.mobilenumber,"Welcome to Triby!. Your code is " + user.code,function(response){
             if(response.status == "error"){
               User.remove({"mobilenumber":user.mobilenumber},function(err){
-                res.json({"status":"error","error":response.message});
+                res.json({"status":"error","message":response.message});
                 return;
               });
             }

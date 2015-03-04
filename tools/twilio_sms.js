@@ -35,7 +35,7 @@ exports.sendSMS = function(phoneNumberTo, aMessage, cb){
 	    } else {
 	    	console.log(error);
 	        console.log('Oops! There was an error.');
-	        cb({"status":"error","message":'Oops! There was an error.'});
+	        cb({"status":"error","message":error.message});
 	    }
 	});
 
