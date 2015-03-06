@@ -11,7 +11,7 @@ var TokenSchema = new Schema({
   email: String
 });
 
-TokenSchema.statics.getEmail = function (ptoken, cb) {
+TokenSchema.statics.getUsername = function (ptoken, cb) {
     
    this.findOne({ token: ptoken }, function(err, gtoken) {
     

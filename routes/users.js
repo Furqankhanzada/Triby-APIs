@@ -6,15 +6,12 @@ var bcrypt = require('bcrypt');
 var uuid = require('node-uuid');
 var middleware = require('./../middleware');
 var tools = require('../tools/twilio_sms');
+var Token = require('./../models').Token;
 
 /* GET users listing. */
-router.get('/test', function(req, res) {
-  res.send('respond with a resource');
-});
-
 router.get('/user', middleware.requiresUser, function(req, res) {
     console.log(req.user);
-    User.findByEmail( req.user , function(err, user) {
+    User.findByUserName( req.user , function(err, user) {
         res.send({"status":"success", "user":user});  
     });
 });
@@ -28,14 +25,23 @@ router.put('/user', middleware.requiresUser, function(req, res) {
 // Login user with username/mobilenumber/status=1
 router.post('/user/login', function(req, res) {
   User.findOne({"username":req.body.username,"mobilenumber":req.body.mobilenumber,"status":1},function(err,aUser){
+
     if(err){
       res.json({"status":"error","message":err});
       return;
     }
     if(!aUser)
       res.json({"status":"error","message":"Not logged"});
-    else
-      res.json({"status":"success","user":aUser});
+    else{
+      // creating a new token
+      var token = new Token();
+      token.token = uuid.v4();
+      token.username = aUser.username;
+      token.save(function () { 
+        res.json({"status":"success","user":aUser,"token":token.token});
+      });
+    }
+
   });
 });
 
@@ -102,7 +108,7 @@ router.post('/user/confirm', function(req, res) {
   var code = req.body.code;
   var phone_number = req.body.mobilenumber;
   var username = req.body.username;
-  console.log(req.body);
+  
   User.findOne({"username":username,"mobilenumber":phone_number,"code":code},function(err,aUser){
     if(!aUser){
       res.json({"status":"error","message":"Invalid code"});
@@ -114,10 +120,61 @@ router.post('/user/confirm', function(req, res) {
         res.json({"status":"error","message":err});
         return;
       }
-      res.json({"status":"sucess"});
+      res.json({"status":"success"});
     });
   });
 
+});
+
+// Change user phone number
+router.post('/user/changenumber', middleware.requiresUser, function(req, res) {
+ 
+  var old_number = req.body.old_number;
+  if(old_number) // remove blank spaces
+    old_number = old_number.replace(" ","");
+
+  var new_number = req.body.new_number;
+  if(new_number) // remove blank spaces
+    new_number = new_number.replace(" ","");
+
+  User.findOne({"mobilenumber":old_number},function(err,aUser){
+    if(err){
+      res.json({"status":"error","message":err});
+      return;
+    }
+    if(!aUser){
+      res.json({"status":"error","message":"Enter your current mobile number"});
+      return;
+    }
+    aUser.mobilenumber = new_number;
+    aUser.save(function(err,aUser2){
+      res.json({"status":"success","message":"Phone number was successfully changed","user":aUser2});
+    });
+  });  
+          
+});
+
+// Delete user account
+router.post('/user/delete', middleware.requiresUser, function(req, res) {
+ 
+  var old_number = req.body.old_number;
+  if(old_number) // remove blank spaces
+    old_number = old_number.replace(" ","");
+
+  User.findOne({"mobilenumber":old_number},function(err,aUser){
+    if(err){
+      res.json({"status":"error","message":err});
+      return;
+    }
+    if(!aUser){
+      res.json({"status":"error","message":"Enter your current mobile number"});
+      return;
+    }
+    User.remove({"username":aUser.username},function(err,aUser2){
+      res.json({"status":"success","message":"User was successfully removed"});
+    });
+  });  
+          
 });
 
 module.exports = router;

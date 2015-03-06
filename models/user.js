@@ -26,8 +26,8 @@ var UserSchema = new Schema({
 });
 
 
-UserSchema.statics.findByEmail = function (emailid, cb) {
-  this.findOne({ email: emailid }, function(err, user) {
+UserSchema.statics.findByUserName = function (aUserName, cb) {
+  this.findOne({ username: aUserName }, function(err, user) {
     if(err || !user){
       var ret = middleware.handleDbError(err, user);
       cb(null, ret);
@@ -39,7 +39,7 @@ UserSchema.statics.findByEmail = function (emailid, cb) {
     delete usr._id;
     delete usr.hashed_password ;
     delete usr.salt;
-    console.log(emailid);
+
     cb(null, usr);
     
   });
