@@ -3,6 +3,10 @@ var router = express.Router();
 var bcrypt = require('bcrypt');
 var uuid = require('node-uuid');
 var cors = require('cors');
+var _ = require('underscore');
+var path = require('path');
+var fs = require('fs-extra');
+var easyimg = require('easyimage');
 
 var User = require('./../models').User;
 var Token = require('./../models').Token;
@@ -16,6 +20,22 @@ var Picture = require('./../models').Picture;
 var middleware = require('./../middleware');
 var multiparty = require('multiparty');
 var fs = require('fs');
+
+var s3 = require('s3');
+
+var client = s3.createClient({
+  maxAsyncS3: 20,     // this is the default
+  s3RetryCount: 3,    // this is the default
+  s3RetryDelay: 1000, // this is the default
+  multipartUploadThreshold: 20971520, // this is the default (20 MB)
+  multipartUploadSize: 15728640, // this is the default (15 MB)
+  s3Options: {
+    accessKeyId: global.AWS_ACCESS_KEY,
+    secretAccessKey: global.AWS_SECRET_KEY
+    // any other options are passed to new AWS.S3()
+    // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Config.html#constructor-property
+  },
+});
 
 /* GET home page. */
 router.get('/', middleware.requiresUser, function(req, res) {
@@ -51,7 +71,59 @@ router.get('/ipeople', function(req, res) {
 });
 
 
+var multipart = require('connect-multiparty')
+    , multipartMiddleware = multipart();
 
+router.post('/uploads', multipartMiddleware, function(req, res){
+
+    var data = _.pick(req.body, 'name', 'description')
+        , uploadPath = global.MEDIA_FOLDER
+        , file = req.files.file;
+    console.log(data);
+
+    var filename_thumb = "";
+    console.log("converting picture to thumbnail: " + uploadPath + file.name);
+    var filename = file.path;
+    filename_thumb = uploadPath + "thumb-" + file.name;
+    easyimg.thumbnail({
+        src:filename, dst:filename_thumb,
+        width:120, height:120
+    }).then(
+        function(image) {
+            console.log('Resized and cropped picture: ' + image.width + ' x ' + image.height);
+            var params = {
+              localFile: filename_thumb,
+
+              s3Params: {
+                Bucket: global.S3_BUCKET,
+                Key: "thumb-" + file.name,
+                ACL: 'public-read'
+              }
+
+            };
+            var uploader = client.uploadFile(params);
+            uploader.on('error', function(err) {
+              console.error("unable to upload:", err.stack);
+              res.send({"status":"error","url_file": url});
+              return;
+            });
+            uploader.on('progress', function() {
+              console.log("progress", uploader.progressMd5Amount,
+                        uploader.progressAmount, uploader.progressTotal);
+            });
+            uploader.on('end', function() {
+              console.log("done uploading");
+              var url = s3.getPublicUrlHttp(global.S3_BUCKET,"thumb-" + file.name);
+              res.send({"status":"success","url_file": url});
+              return;
+            });
+            
+        },
+        function (err) {
+            console.log("error resizing " + err)
+        }
+    );
+});
 
 router.post('/photo', function(req, res) {
     console.log('photo');

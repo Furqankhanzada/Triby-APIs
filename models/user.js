@@ -18,6 +18,7 @@ var UserSchema = new Schema({
   salt: { type: String },
   firstname: String,
   lastname: String,
+  name: String,
   bio: String,
   city: String,
   country: String,

@@ -7,19 +7,15 @@ var uuid = require('node-uuid');
 var middleware = require('./../middleware');
 var tools = require('../tools/twilio_sms');
 var Token = require('./../models').Token;
+var Feedback = require('./../models').Feedback;
 
-/* GET users listing. */
-router.get('/user', middleware.requiresUser, function(req, res) {
-    console.log(req.user);
-    User.findByUserName( req.user , function(err, user) {
+
+// Get user
+router.get('/user/:username', middleware.requiresUser, function(req, res) {
+    console.log(req.params.username);
+    User.findByUserName(req.params.username , function(err, user) {
         res.send({"status":"success", "user":user});  
     });
-});
-
-router.put('/user', middleware.requiresUser, function(req, res) {
-    User.update( req , function(err, user) {
-        res.send({"status":"success", "user":user});
-    });  
 });
 
 // Login user with username/mobilenumber/status=1
@@ -104,6 +100,23 @@ router.post('/user', function(req, res) {
 });
 
 //User create
+router.put('/user/:username', middleware.requiresUser, function(req, res) {
+  User.findOne({"username":req.params.username},function(err,aUser){
+    aUser.name = req.body.name;
+    aUser.pic = req.body.image;
+    aUser.city = req.body.city;
+
+    aUser.save(function(err,user2){
+      if(err){
+        res.json({"status":"error","message":err});
+        return;
+      }
+      res.json({"status":"success"});
+    });
+  });
+});
+
+//User create
 router.post('/user/confirm', function(req, res) {
   var code = req.body.code;
   var phone_number = req.body.mobilenumber;
@@ -175,6 +188,18 @@ router.post('/user/delete', middleware.requiresUser, function(req, res) {
     });
   });  
           
+});
+
+//Feedback create
+router.post('/user/feedback', middleware.requiresUser, function(req, res) {
+
+  Feedback.create(req.body,function (err,feedback) {
+    if(err)
+      res.send({"status":"error","message":err});
+    else
+      res.json({"status":"success","feedback":feedback});
+  });
+    
 });
 
 module.exports = router;

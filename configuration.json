@@ -1,5 +1,9 @@
 {
 	"TWILIO_SID" : "AC81c6603d5c4a288a61af501fecb485da",
 	"TWILIO_TOKEN" : "01bad099a28fdc80b1a4f4a1f154f1ce",
-	"TWILIO_NUMBER" : "+15147003568"
+	"TWILIO_NUMBER" : "+15147003568",
+	"MEDIA_FOLDER" : "/root/Backend-Triby-Dev/media/pictures/",
+	"AWS_ACCESS_KEY" : "AKIAIZPQYKHYUICKCVDA",
+	"AWS_SECRET_KEY" : "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",
+	"S3_BUCKET" : "triby"
 }

@@ -16,6 +16,14 @@ global.TWILIO_SID = configuration.TWILIO_SID;
 global.TWILIO_TOKEN = configuration.TWILIO_TOKEN;
 global.TWILIO_NUMBER = configuration.TWILIO_NUMBER;
 
+// media settings
+global.MEDIA_FOLDER = configuration.MEDIA_FOLDER;
+
+// Amazon settings
+global.AWS_ACCESS_KEY = configuration.AWS_ACCESS_KEY;
+global.AWS_SECRET_KEY = configuration.AWS_SECRET_KEY;
+global.S3_BUCKET = configuration.S3_BUCKET;
+
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var tribes = require('./routes/tribes');
@@ -42,6 +50,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.all('*', function(req, res, next) {
   console.log('ALL');
   res.header("Access-Control-Allow-Origin", "*");
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Authorization, Content-Type, Accept");
   next();
  });
