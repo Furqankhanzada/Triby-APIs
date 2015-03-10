@@ -8,7 +8,7 @@ var middleware = require('./../middleware');
 var tools = require('../tools/twilio_sms');
 var Token = require('./../models').Token;
 var Feedback = require('./../models').Feedback;
-
+var Device = require('./../models').Device;
 
 // Get user
 router.get('/user/:username', middleware.requiresUser, function(req, res) {
@@ -20,21 +20,27 @@ router.get('/user/:username', middleware.requiresUser, function(req, res) {
 
 // Login user with username/mobilenumber/status=1
 router.post('/user/login', function(req, res) {
-  User.findOne({"username":req.body.username,"mobilenumber":req.body.mobilenumber,"status":1},function(err,aUser){
+  Device.findOne({"username":req.body.username,"mobilenumber":req.body.mobilenumber,"status":1},function(err,aDevice){
 
     if(err){
       res.json({"status":"error","message":err});
       return;
     }
-    if(!aUser)
+    if(!aDevice)
       res.json({"status":"error","message":"Not logged"});
     else{
-      // creating a new token
-      var token = new Token();
-      token.token = uuid.v4();
-      token.username = aUser.username;
-      token.save(function () { 
-        res.json({"status":"success","user":aUser,"token":token.token});
+      User.findOne({"username":req.body.username,"mobilenumber":req.body.mobilenumber},function(err,aUser){
+        if(!aUser)
+          res.json({"status":"error","message":"User doesn't exists"});
+        else{
+          // creating a new token
+          var token = new Token();
+          token.token = uuid.v4();
+          token.username = aUser.username;
+          token.save(function () { 
+            res.json({"status":"success","user":aUser,"token":token.token});
+          });
+        }
       });
     }
 
@@ -53,44 +59,71 @@ router.post('/user', function(req, res) {
     res.json({"status":"error","message":"Username and mobile number are required"});
     return;
   }
-  User.findOne({"username":user.username},function(err,testUser){
+  if(!req.body.device_id){
+    res.json({"status":"error","message":"Not device id was generated for your device"});
+    return;
+  }
+
+  User.findOne({"username":user.username,"mobilenumber":{ $ne : user.mobilenumber}},function(err,testUser){
     if(testUser){
       res.json({"status":"error","message":"Username already exists"});
       return;
     }
-    User.findOne({"mobilenumber":user.mobilenumber},function(err,testUser){
+    User.findOne({"mobilenumber":user.mobilenumber, "username":{ $ne : user.username}},function(err,testUser){
       if(testUser){
         res.json({"status":"error","message":"Mobile number already exists"});
         return;
       }
+      // if user and number already exists
+      User.findOne({"mobilenumber":user.mobilenumber, "username":user.username},function(err,testUser){
+        if(testUser){
+          var code = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+          Device.findOneAndUpdate({"username":user.username,"mobilenumber":user.mobilenumber},{"code":code,"status":0}, function(err){
+            tools.sendSMS(user.mobilenumber,"Welcome to Triby!. Your code is " + code,function(response){
+              res.json({"status":"success", "user":testUser}); 
+              return; 
+            }); 
+          });
+        }
+        else{
+          user.email = req.body.email;
+          user.hashed_password = bcrypt.hashSync(req.body.password, salt);
+          user.salt = salt;
+          user.firstname = req.body.firstname;
+          user.lastname = req.body.lastname;
+          user.city = req.body.city;
+          user.country = req.body.country;
 
-      user.email = req.body.email;
-      user.hashed_password = bcrypt.hashSync(req.body.password, salt);
-      user.salt = salt;
-      user.firstname = req.body.firstname;
-      user.lastname = req.body.lastname;
-      user.city = req.body.city;
-      user.country = req.body.country;
-      user.code = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+          var device = new Device();
+          device.username = user.username;
+          device.mobilenumber = user.mobilenumber;
+          device.device_id = req.body.device_id;
+          device.code = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
 
-      user.save(function (err) {
-        if(err)
-          res.send({"error":err});
-        else
-        {
-          usr = user.toObject();
-          delete usr.__v;
-          delete usr.hashed_password;
-          delete usr.salt;
-          tools.sendSMS(user.mobilenumber,"Welcome to Triby!. Your code is " + user.code,function(response){
-            if(response.status == "error"){
-              User.remove({"mobilenumber":user.mobilenumber},function(err){
-                res.json({"status":"error","message":response.message});
-                return;
-              });
+          user.save(function (err) {
+            if(err){
+              res.send({"error":err});
+              return;
             }
             else
-              res.send({"status":"success", "user":usr}); 
+              device.save(function(err){
+                if(err)
+                  console.log(err);
+                usr = user.toObject();
+                delete usr.__v;
+                delete usr.hashed_password;
+                delete usr.salt;
+                tools.sendSMS(user.mobilenumber,"Welcome to Triby!. Your code is " + device.code,function(response){
+                  if(response.status == "error"){
+                    User.remove({"mobilenumber":user.mobilenumber},function(err){
+                      res.json({"status":"error","message":response.message});
+                      return;
+                    });
+                  }
+                  else
+                    res.send({"status":"success", "user":usr}); 
+                });
+              });
           });
         }
       });
@@ -99,7 +132,7 @@ router.post('/user', function(req, res) {
 
 });
 
-//User create
+//User profile update
 router.put('/user/:username', middleware.requiresUser, function(req, res) {
   User.findOne({"username":req.params.username},function(err,aUser){
     aUser.name = req.body.name;
@@ -116,24 +149,30 @@ router.put('/user/:username', middleware.requiresUser, function(req, res) {
   });
 });
 
-//User create
+//User code confirm
 router.post('/user/confirm', function(req, res) {
   var code = req.body.code;
   var phone_number = req.body.mobilenumber;
   var username = req.body.username;
   
-  User.findOne({"username":username,"mobilenumber":phone_number,"code":code},function(err,aUser){
-    if(!aUser){
+  Device.findOne({"username":username,"mobilenumber":phone_number,"code":code},function(err,aDevice){
+    if(!aDevice){
       res.json({"status":"error","message":"Invalid code"});
       return;
     }
-    aUser.status = 1;
-    aUser.save(function(err,user2){
+    aDevice.status = 1;
+    aDevice.save(function(err,device2){
       if(err){
         res.json({"status":"error","message":err});
         return;
       }
-      res.json({"status":"success"});
+      User.findOneAndUpdate({"username":username},{"status":1},function(err){
+        if(err) {
+          res.json({"status":"error","message":err});
+          return;
+        }
+        res.json({"status":"success"});
+      });
     });
   });
 
@@ -200,6 +239,19 @@ router.post('/user/feedback', middleware.requiresUser, function(req, res) {
       res.json({"status":"success","feedback":feedback});
   });
     
+});
+
+// Get users from mobile number list
+router.post('/user/contacts', middleware.requiresUser, function(req, res) {
+
+  var contacts = req.body.contacts;
+
+  User.find({"mobilenumber": {$in: contacts},"status":1}, function(err,users){
+    if(err)
+      res.send({"status":"error","message":err});
+    else
+      res.json({"status":"success","users":users});
+  });
 });
 
 module.exports = router;

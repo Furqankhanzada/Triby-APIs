@@ -11,3 +11,4 @@ module.exports.Ipeople = require('./ipeople');
 module.exports.Post = require('./post');
 module.exports.Picture = require('./picture');
 module.exports.Feedback = require('./feedback');
+module.exports.Device = require('./device');

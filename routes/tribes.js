@@ -4,12 +4,11 @@ var middleware = require('./../middleware');
 var Tribe = require('./../models').Tribe;
 var User = require('./../models').User;
 
-router.get('/tribes', middleware.requiresUser, function(req, res) {
+router.get('/tribes/user/:username', middleware.requiresUser, function(req, res) {
     
-    Tribe.listByUser(req.user , function(err, tribes) {
-	res.send({"status":"success", "tribes":tribes});	
+    Tribe.listByUser(req.params.username , function(err, tribes) {
+	   res.send({"status":"success", "tribes":tribes});	
     });
-    //res.send('tribe');
 });
 
 router.post('/tribes', middleware.requiresUser, function(req, res) {
@@ -17,7 +16,10 @@ router.post('/tribes', middleware.requiresUser, function(req, res) {
     tribe.name = req.body.name;
     tribe.description = req.body.description;
     tribe.privacy = req.body.privacy;
-    tribe.createdby = req.user;
+    tribe.createdby = req.body.username;
+    tribe.pic = req.body.image;
+    for(var i=0; i < req.body.members.length; i++)
+        tribe.members.push(req.body.members[i]);
     tribe.save(function () {
         trb = tribe.toObject();
 	    delete trb.__v;
@@ -38,10 +40,10 @@ router.get('/tribes/:tribeid', middleware.requiresUser, function(req, res) {
 });
 
 router.post('/tribes/:tribeid/members', middleware.requiresUser, function(req, res) {
-    
+
     req.body.users.forEach(function(user) { 
         
-        User.findByEmail( user.email , function(err, usr) {
+        User.findByUserName( user.username , function(err, usr) {
             console.log(usr.status);
             if(usr.status=="empty result" || usr.status=="error") {
                 var newuser = new User();
@@ -53,7 +55,7 @@ router.post('/tribes/:tribeid/members', middleware.requiresUser, function(req, r
                 });
                 usr = newuser;
             }
-            req.email = usr.email;
+            req.username = usr.username;
             Tribe.addMember( req , function(err, tribe) {
                 
             });

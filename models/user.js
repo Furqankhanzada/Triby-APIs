@@ -11,7 +11,6 @@ var Token = require('./token');
 var UserSchema = new Schema({
   username: { type: String, unique: true, required:true },
   mobilenumber: { type: String, unique: true, required:true },
-  code: { type: Number, required:true },
   status: {type: Number, required:true, default:0},
   email: { type: String},
   hashed_password: { type: String},

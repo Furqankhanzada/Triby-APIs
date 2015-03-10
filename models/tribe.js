@@ -82,8 +82,9 @@ TribeSchema.statics.addBiz = function (req, cb) {
 }
 
 TribeSchema.statics.addMember = function (req, cb) {
-  var query = { _id: req.param('tribeid') }; 
-  this.findOneAndUpdate(query, {$addToSet: {members:req.email}}, function(err, tribe){
+  var query = { _id: req.param('tribeid') };
+  console.log(query);
+  this.findOneAndUpdate(query, {$addToSet: {members:req.username}}, function(err, tribe){
     if(err || !tribe){
       var ret = middleware.handleDbError(err, tribe);
       cb(null, ret);
@@ -148,8 +149,8 @@ TribeSchema.statics.listBiz = function (tribeid, cb) {
     });
 }
 
-TribeSchema.statics.listByUser = function (email, cb) {
-  this.find( {$or:[{ createdby: email}, {members:{$in:[email]}}]}, function(err, tribes) {
+TribeSchema.statics.listByUser = function (username, cb) {
+  this.find( {$or:[{ createdby: username}, {members:{$in:[username]}}]}, function(err, tribes) {
     if(err || !tribes){
       var ret = middleware.handleDbError(err, tribes);
       cb(null, ret);
