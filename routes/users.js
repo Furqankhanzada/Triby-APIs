@@ -78,7 +78,7 @@ router.post('/user', function(req, res) {
       User.findOne({"mobilenumber":user.mobilenumber, "username":user.username},function(err,testUser){
         if(testUser){
           var code = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
-          Device.findOneAndUpdate({"username":user.username,"mobilenumber":user.mobilenumber},{"code":code,"status":0}, function(err){
+          Device.findOneAndUpdate({"username":user.username,"mobilenumber":user.mobilenumber},{"code":code,"status":0}, {upsert:false}, function(err){
             tools.sendSMS(user.mobilenumber,"Welcome to Triby!. Your code is " + code,function(response){
               res.json({"status":"success", "user":testUser}); 
               return; 
