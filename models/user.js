@@ -22,7 +22,8 @@ var UserSchema = new Schema({
   city: String,
   country: String,
   dob: Date,
-  pic: String
+  pic: String,
+  type: String
 });
 
 

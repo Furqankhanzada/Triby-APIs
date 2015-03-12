@@ -149,6 +149,51 @@ router.put('/user/:username', middleware.requiresUser, function(req, res) {
   });
 });
 
+// Create or update Facebook user
+router.post('/user/facebook', function(req, res) {
+  var username = req.body.id;
+
+  User.findOne({"username":username},function(err,aUser){
+    console.log(aUser);
+    if(!aUser){ //update
+      aUser = new User();
+      aUser.username = req.body.id;
+      aUser.mobilenumber = "na";
+      aUser.type = "FACEBOOK";
+      aUser.status = 1;
+    }
+    aUser.name = req.body.name;
+    aUser.email = req.body.email;
+    aUser.pic = req.body.image;
+
+    aUser.save(function(err){
+      if(err){
+        res.json({"status":"error","message":err});
+        return;
+      }
+      else{
+        // creating a new token
+        var token = new Token();
+        token.token = uuid.v4();
+        token.username = aUser.username;
+        token.save(function () { 
+          res.json({"status":"success","user":aUser,"token":token.token});
+        });
+      }
+    });
+    /*
+    User.findOneAndUpdate({"username":aUser.username},aUser,{upsert:true},function(err,numberAffected){
+      if(err){
+        res.json({"status":"error","message":err});
+        return;
+      }
+      else{
+        res.json({"status":"success","message":"Facebook user created successfully"});
+      }
+    });*/
+  })
+});
+
 //User code confirm
 router.post('/user/confirm', function(req, res) {
   var code = req.body.code;
