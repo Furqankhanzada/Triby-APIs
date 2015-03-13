@@ -8,27 +8,27 @@ var Biz = require('./../models').Biz;
 router.post('/posts', middleware.requiresUser, function(req, res) {
     var type = req.body.parenttype;
     var post = new Post();
-    post.createdby = req.user;
+    post.createdby = req.body.user;
     post.date = new Date();
     post.content = req.body.content;
     post.parentType = req.body.parenttype;
     post.parentID = req.body.parentid;
     post.save(function () {
-    req.postid = post._id;
-        
-	if(type == 'event'){
-          Event.addPost( req , function(err, event) {
-              res.send({"status":"success", "event":event});
-          });
-	}else if(type == 'biz'){
-	       Biz.addPost( req , function(err, biz) {
-              res.send({"status":"success", "biz":biz});
-          });
-	}else if(type == 'tribe'){
-	       Tribe.addPost( req , function(err, tribe) {
-              res.send({"status":"success", "tribe":tribe});
-          });
-	}
+        req.postid = post._id;
+            
+    	if(type == 'event'){
+              Event.addPost( req , function(err, event) {
+                  res.send({"status":"success", "event":event});
+              });
+    	}else if(type == 'biz'){
+    	       Biz.addPost( req , function(err, biz) {
+                  res.send({"status":"success", "biz":biz});
+              });
+    	}else if(type == 'tribe'){
+    	       Tribe.addPost( req , function(err, tribe) {
+                  res.send({"status":"success", "tribe":tribe});
+              });
+    	}
 
     });    
 });

@@ -79,50 +79,67 @@ router.post('/uploads', multipartMiddleware, function(req, res){
     var data = _.pick(req.body, 'name', 'description')
         , uploadPath = global.MEDIA_FOLDER
         , file = req.files.file;
-    console.log(data);
-
-    var filename_thumb = "";
-    console.log("converting picture to thumbnail: " + uploadPath + file.name);
+    
     var filename = file.path;
-    filename_thumb = uploadPath + "thumb-" + file.name;
-    easyimg.thumbnail({
-        src:filename, dst:filename_thumb,
-        width:120, height:120
-    }).then(
-        function(image) {
-            console.log('Resized and cropped picture: ' + image.width + ' x ' + image.height);
-            var params = {
-              localFile: filename_thumb,
+    easyimg.info(filename).then(function(fileInfo){
+      console.log(fileInfo);
+      var aType = req.body.type;
+      var filename_thumb = "";
+      var prename = "";
+      var aWidth, aHeight;
+      if(aType=="POST"){
+        prename = "post-";
+        aWidth = (fileInfo.width>600?600:fileInfo.width);
+        aWidth = (fileInfo.width>600?(600 + (600*Math.abs(fileInfo.width-fileInfo.height)/fileInfo.height)):fileInfo.height);
+      }
+      else{
+        prename = "thumb-";
+        filename_thumb = uploadPath + "thumb-" + file.name;
+        aWidth = 120;
+        aHeight = 120;
+      }
+      console.log("converting picture: " + uploadPath + file.name);
+      filename_thumb = uploadPath + prename + file.name;
 
-              s3Params: {
-                Bucket: global.S3_BUCKET,
-                Key: "thumb-" + file.name,
-                ACL: 'public-read'
-              }
+      easyimg.thumbnail({
+          src:filename, dst:filename_thumb,
+          width:aWidth, height:aHeight
+      }).then(
+          function(image) {
+              console.log('Resized and cropped picture: ' + image.width + ' x ' + image.height);
+              var params = {
+                localFile: filename_thumb,
 
-            };
-            var uploader = client.uploadFile(params);
-            uploader.on('error', function(err) {
-              console.error("unable to upload:", err.stack);
-              res.send({"status":"error","url_file": url});
-              return;
-            });
-            uploader.on('progress', function() {
-              console.log("progress", uploader.progressMd5Amount,
-                        uploader.progressAmount, uploader.progressTotal);
-            });
-            uploader.on('end', function() {
-              console.log("done uploading");
-              var url = s3.getPublicUrlHttp(global.S3_BUCKET,"thumb-" + file.name);
-              res.send({"status":"success","url_file": url});
-              return;
-            });
-            
-        },
-        function (err) {
-            console.log("error resizing " + err)
-        }
-    );
+                s3Params: {
+                  Bucket: global.S3_BUCKET,
+                  Key: prename + file.name,
+                  ACL: 'public-read'
+                }
+
+              };
+              var uploader = client.uploadFile(params);
+              uploader.on('error', function(err) {
+                console.error("unable to upload:", err.stack);
+                res.send({"status":"error","url_file": url});
+                return;
+              });
+              uploader.on('progress', function() {
+                console.log("progress", uploader.progressMd5Amount,
+                          uploader.progressAmount, uploader.progressTotal);
+              });
+              uploader.on('end', function() {
+                console.log("done uploading");
+                var url = s3.getPublicUrlHttp(global.S3_BUCKET,prename + file.name);
+                res.send({"status":"success","url_file": url});
+                return;
+              });
+              
+          },
+          function (err) {
+              console.log("error resizing " + err)
+          }
+      );
+    });    
 });
 
 router.post('/photo', function(req, res) {

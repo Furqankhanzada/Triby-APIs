@@ -55,7 +55,7 @@ PostSchema.statics.findByIds = function (ids, cb) {
 }
 
 PostSchema.statics.findByParent = function (req, cb) {
-  var query = { parentID: req.query.parentid };   
+  var query = { parentID: req.params.parentid };   
   this.find(query, function(err, posts){
     if(err || !posts){
       var ret = middleware.handleDbError(err, posts);
