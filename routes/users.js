@@ -12,7 +12,6 @@ var Device = require('./../models').Device;
 
 // Get user
 router.get('/user/:username', middleware.requiresUser, function(req, res) {
-    console.log(req.params.username);
     User.findByUserName(req.params.username , function(err, user) {
         res.send({"status":"success", "user":user});  
     });
@@ -138,8 +137,9 @@ router.put('/user/:username', middleware.requiresUser, function(req, res) {
     aUser.name = req.body.name;
     aUser.pic = req.body.image;
     aUser.city = req.body.city;
-
+    console.log(aUser);
     aUser.save(function(err,user2){
+      console.log(user2);
       if(err){
         res.json({"status":"error","message":err});
         return;

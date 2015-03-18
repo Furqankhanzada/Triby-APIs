@@ -88,10 +88,10 @@ router.post('/tribes/:tribeid/members', middleware.requiresUser, function(req, r
     res.send({"status":"success"});
 });
 
-router.delete('/tribes/:tribeid/members', middleware.requiresUser, function(req, res) {
-        Tribe.removeMember( req , function(err, tribe) {
-                res.send({"status":"success", "tribe":tribe});
-        });
+router.put('/tribes/:tribeid/members', middleware.requiresUser, function(req, res) {
+    Tribe.removeMember( req , function(err, tribe) {
+            res.send({"status":"success", "tribe":tribe});
+    });
 });
 
 module.exports = router;

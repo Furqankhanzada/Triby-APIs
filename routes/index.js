@@ -95,8 +95,16 @@ router.post('/uploads', multipartMiddleware, function(req, res){
       else{
         prename = "thumb-";
         filename_thumb = uploadPath + "thumb-" + file.name;
-        aWidth = 120;
-        aHeight = 120;
+        if(fileInfo.width > fileInfo.height){
+          aWidth = fileInfo.height;
+          aHeight = fileInfo.height;  
+        }
+        else
+        {
+          aWidth = fileInfo.width;
+          aHeight = fileInfo.width;
+        }
+        
       }
       console.log("converting picture: " + uploadPath + file.name);
       filename_thumb = uploadPath + prename + file.name;

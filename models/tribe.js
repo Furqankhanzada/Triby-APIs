@@ -98,15 +98,23 @@ TribeSchema.statics.addMember = function (req, cb) {
 
 TribeSchema.statics.removeMember = function (req, cb) {
   var query = { _id: req.param('tribeid') }; 
-  this.findOneAndUpdate(query, {$pullAll: {members:req.body.users}}, function(err, tribe){
+  this.findOneAndUpdate(query, {$pull: {members:req.body.username}}, function(err, tribe){
     if(err || !tribe){
       var ret = middleware.handleDbError(err, tribe);
       cb(null, ret);
       return;
     }
-    trb = tribe.toObject();
-    delete trb.__v;
-	cb(null, trb);  
+    query = { _id: req.param('tribeid'), createdby:req.body.username }; 
+    TribeModel.remove(query,function(err){
+      if(err){
+        var ret = middleware.handleDbError(err, tribe);
+        cb(null, ret);
+        return;
+      }
+      trb = tribe.toObject();
+      delete trb.__v;
+      cb(null, trb);
+    });  
   });  
 }
 
