@@ -299,4 +299,17 @@ router.post('/user/contacts', middleware.requiresUser, function(req, res) {
   });
 });
 
+// Get users from mobile number list
+router.post('/user/facebook/contacts', middleware.requiresUser, function(req, res) {
+
+  var contacts = req.body.contacts;
+
+  User.find({"username": {$in: contacts},"status":1}, function(err,users){
+    if(err)
+      res.send({"status":"error","message":err});
+    else
+      res.json({"status":"success","users":users});
+  });
+});
+
 module.exports = router;
