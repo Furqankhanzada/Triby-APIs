@@ -11,6 +11,7 @@ router.post('/posts', middleware.requiresUser, function(req, res) {
     post.createdby = req.body.user;
     post.date = new Date();
     post.content = req.body.content;
+    post.pic = req.body.pic;
     post.parentType = req.body.parenttype;
     post.parentID = req.body.parentid;
     post.save(function () {
@@ -46,11 +47,13 @@ router.delete('/posts/:postid', middleware.requiresUser, function(req, res) {
     });
 });
 
+/*
 router.get('/posts/:postid', middleware.requiresUser, function(req, res) {
     Post.findById(req.param('postid') , function(err, post) {
-        res.send({"status":"success", "post":post});		
+        res.send({"status":"success", "post":post});
     });
 });
+*/
 
 router.put('/posts', middleware.requiresUser, function(req, res) {
     Post.findByIds(req.body.ids , function(err, posts) {
@@ -58,9 +61,9 @@ router.put('/posts', middleware.requiresUser, function(req, res) {
     });
 });
 
-router.get('/posts', middleware.requiresUser, function(req, res) {
+router.get('/posts/:parentid', middleware.requiresUser, function(req, res) {
     Post.findByParent(req , function(err, posts) {
-        res.send({"status":"success", "posts":posts});		
+        res.send({"status":"success", "posts":posts});
     });
 });
 
