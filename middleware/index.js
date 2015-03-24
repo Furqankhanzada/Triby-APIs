@@ -5,16 +5,13 @@ var Token = require('./../models/token');
 
 function requiresUser(req, res, next) {
     
-    console.log("Call middleware")
-    console.log("req.headers.authorization " + req.headers.authorization);
     Token.getUsername( req.headers.authorization , function(err, token) {
-        
         if (err || !token){
             res.status(403).send("Forbidden");
         }else{
-            models.User.findOne( {"username":token.username} , function(err, user) {
-                req.user = user.username;
-                req.name = user.firstname + ' ' + user.lastname;
+            models.User.findOne( {"username": token.username} , function(err, user) {
+                req.userId = user._id;
+                //req.name = (user.firstname && user.lastname && user.firstname + ' ' + user.lastname) || user.name || user.username;
                 next();
             });
         }
