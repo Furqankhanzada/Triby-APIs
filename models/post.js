@@ -16,22 +16,21 @@ var PostSchema = new Schema({
     parentID: String,
     shakka: [String],
     heart: [String],
-    comments: [{"comment":String, "user":String, "name":String, "time":Date}],
-
+    comments: [{"comment":String, "user": {type: Schema.Types.ObjectId, ref: 'User'} , "time":Date}]
 });
 
 PostSchema.statics.findById = function (id, cb) {
-  var query = { _id: id };   
-  this.findOne(query, function(err, post){
-    if(err || !post){
-      var ret = middleware.handleDbError(err, post);
-      cb(null, ret);
-      return;
-    }  
-      
-	pt = post.toObject();
-    delete pt.__v;
-	cb(null, pt);  
+  var query = { _id: id };
+  this.findOne(query).populate('comments.user').exec(function(err, post){
+      if(err || !post){
+          var ret = middleware.handleDbError(err, post);
+          cb(null, ret);
+          return;
+      }
+
+      pt = post.toObject();
+      delete pt.__v;
+      cb(null, pt);
   });
 }
 
@@ -55,7 +54,7 @@ PostSchema.statics.findByIds = function (ids, cb) {
 }
 
 PostSchema.statics.findByParent = function (req, cb) {
-  var query = { parentID: req.params.parentid };   
+  var query = { parentID: req.params.parentid };
   this.find(query, function(err, posts){
     if(err || !posts){
       var ret = middleware.handleDbError(err, posts);
@@ -141,14 +140,15 @@ PostSchema.statics.removeHeart = function (req, cb) {
 
 PostSchema.statics.addComment = function (req, cb) {
     var query = { _id: req.body.id };
-    this.findOneAndUpdate(query, {$addToSet: {comments:{"comment":req.body.comment, "user":req.user, "name":req.name, "time":new Date()}}}, function(err, post){
-        if(err || !post){
-          var ret = middleware.handleDbError(err, post);
-          cb(null, ret);
-          return;
-        }
-        cb(null, post);  
-    });    
+    this.findOneAndUpdate(query, {$addToSet: {comments:{"comment":req.body.comment, "user": req.userId, "time":new Date()}}})
+        .populate('comments.user').exec(function(err, post){
+            if(err || !post){
+                var ret = middleware.handleDbError(err, post);
+                cb(null, ret);
+                return;
+            }
+            cb(null, post);
+        });
 }
 
 PostSchema.statics.removeComment = function (req, cb) {
