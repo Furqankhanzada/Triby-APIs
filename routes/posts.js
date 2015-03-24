@@ -47,13 +47,11 @@ router.delete('/posts/:postid', middleware.requiresUser, function(req, res) {
     });
 });
 
-/*
 router.get('/posts/:postid', middleware.requiresUser, function(req, res) {
     Post.findById(req.param('postid') , function(err, post) {
         res.send({"status":"success", "post":post});
     });
 });
-*/
 
 router.put('/posts', middleware.requiresUser, function(req, res) {
     Post.findByIds(req.body.ids , function(err, posts) {
@@ -61,7 +59,7 @@ router.put('/posts', middleware.requiresUser, function(req, res) {
     });
 });
 
-router.get('/posts/:parentid', middleware.requiresUser, function(req, res) {
+router.get('/posts/triby/:parentid', middleware.requiresUser, function(req, res) {
     Post.findByParent(req , function(err, posts) {
         res.send({"status":"success", "posts":posts});
     });
