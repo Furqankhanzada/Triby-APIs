@@ -9,8 +9,8 @@ Schema = mongoose.Schema;
 var Token = require('./token');
 
 var UserSchema = new Schema({
-  username: { type: String, unique: true, required:true },
-  mobilenumber: { type: String, unique: true, required:true },
+  username: { type: String, unique: true, required: true },
+  mobilenumber: { type: String, unique: true },
   status: {type: Number, required:true, default:0},
   email: { type: String},
   hashed_password: { type: String},
@@ -118,6 +118,7 @@ UserSchema.statics.findByUserName = function (aUserName, cb) {
   }
 
  var UserModel = mongoose.model('User', UserSchema);
+ UserModel.ensureIndexes({mobilenumber: 1}, {unique: true, sparse: true});
  module.exports = UserModel;
 
 
