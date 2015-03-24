@@ -90,7 +90,7 @@ UserSchema.statics.findByUserName = function (aUserName, cb) {
   }
 
   UserSchema.statics.authenticate = function (body, cb) {
-  this.findOne({ email: body.email }, function(err, user) {
+  this.findOne({ username: body.username }, function(err, user) {
     if(err || !user){
       var ret = middleware.handleDbError(err, user);
       cb(null, ret);
@@ -103,13 +103,13 @@ UserSchema.statics.findByUserName = function (aUserName, cb) {
       usr = user.toObject();
       var token = new Token();
       token.token = uuid.v4();
-      token.email = usr.email;
+      token.username = usr.username;
 
       token.save(function () { 
       
       tkn = token.toObject();
       delete tkn.__v;
-	  delete tkn.email;
+	  delete tkn.username;
       delete tkn._id;
 	  cb(null, tkn);
 
