@@ -8,7 +8,7 @@ Schema = mongoose.Schema;
 
 var TokenSchema = new Schema({
   token: { type: String, unique: true, required: true },
-  email: String
+  username: String
 });
 
 TokenSchema.statics.getUsername = function (ptoken, cb) {
