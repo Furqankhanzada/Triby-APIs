@@ -7,7 +7,7 @@ var mongoose = require('mongoose');
 Schema = mongoose.Schema;
 
 var PostSchema = new Schema({
-    createdby: String,
+    createdBy: {type: Schema.Types.ObjectId, ref: 'User'},
     content: String,
     privacy: String,
     pic: String,
@@ -55,14 +55,14 @@ PostSchema.statics.findByIds = function (ids, cb) {
 
 PostSchema.statics.findByParent = function (req, cb) {
   var query = { parentID: req.params.parentid };
-  this.find(query, function(err, posts){
-    if(err || !posts){
-      var ret = middleware.handleDbError(err, posts);
-      cb(null, ret);
-      return;
-    }
-     
-	cb(null, posts);
+  this.find(query).populate('createdBy').exec(function(err, posts){
+      if(err || !posts){
+          var ret = middleware.handleDbError(err, posts);
+          cb(null, ret);
+          return;
+      }
+
+      cb(null, posts);
   });
 }
 

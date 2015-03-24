@@ -8,7 +8,7 @@ var Biz = require('./../models').Biz;
 router.post('/posts', middleware.requiresUser, function(req, res) {
     var type = req.body.parenttype;
     var post = new Post();
-    post.createdby = req.body.user;
+    post.createdBy = req.userId;
     post.date = new Date();
     post.content = req.body.content;
     post.pic = req.body.pic;
