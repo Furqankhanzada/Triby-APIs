@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 
 mongoose.connect('mongodb://user:pwd@ds037990.mongolab.com:37990/wec1node');
+//mongoose.connect('mongodb://localhost/wec1node');
 
 module.exports.User = require('./user');
 module.exports.Token = require('./token');

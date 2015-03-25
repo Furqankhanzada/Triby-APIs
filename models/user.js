@@ -37,7 +37,6 @@ UserSchema.statics.findByUserName = function (aUserName, cb) {
     
     usr = user.toObject();  
     delete usr.__v;
-    delete usr._id;
     delete usr.hashed_password ;
     delete usr.salt;
 

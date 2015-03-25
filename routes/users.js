@@ -158,7 +158,7 @@ router.post('/user/facebook', function(req, res) {
     if(!aUser){ //update
       aUser = new User();
       aUser.username = req.body.id;
-      aUser.mobilenumber = "";
+      aUser.mobilenumber = req.body.id;
       aUser.type = "FACEBOOK";
       aUser.status = 1;
     }

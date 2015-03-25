@@ -14,8 +14,9 @@ var PostSchema = new Schema({
     date: Date,
     parentType: String,
     parentID: String,
-    shakka: [String],
-    heart: [String],
+    likes: [String],
+    dislikes: [String],
+    hearts: [String],
     comments: [{"comment":String, "user": {type: Schema.Types.ObjectId, ref: 'User'} , "time":Date}]
 });
 
@@ -32,14 +33,14 @@ PostSchema.statics.findById = function (id, cb) {
       delete pt.__v;
       cb(null, pt);
   });
-}
+};
 
 PostSchema.statics.removeById = function (id, cb) {
   var query = { _id: id };   
   this.remove(query, function(err){
 	cb(null, {"status":"success"});
   });
-}
+};
 
 PostSchema.statics.findByIds = function (ids, cb) {
   var query = { _id: { $in: ids } };   
@@ -51,7 +52,7 @@ PostSchema.statics.findByIds = function (ids, cb) {
     }  
 	cb(null, posts);  
   });
-}
+};
 
 PostSchema.statics.findByParent = function (req, cb) {
   var query = { parentID: req.params.parentid };
@@ -64,7 +65,7 @@ PostSchema.statics.findByParent = function (req, cb) {
 
       cb(null, posts);
   });
-}
+};
 
 PostSchema.statics.findByParents = function (req, cb) {
   var query = { parentID: { $in: req.body.parentids }};   
@@ -76,7 +77,7 @@ PostSchema.statics.findByParents = function (req, cb) {
     }
     cb(null, posts);
   });
-}
+};
 
 PostSchema.statics.update = function (req, cb) {
     var query = { _id: req.param('postid') };
@@ -88,11 +89,11 @@ PostSchema.statics.update = function (req, cb) {
         }
         cb(null, post);  
     });
-}
+};
 
-PostSchema.statics.addToShakka = function (req, cb) {
+PostSchema.statics.addToLike = function (req, cb) {
     var query = { _id: req.body.id };
-    this.findOneAndUpdate(query, {$addToSet: {shakka:req.user}}, function(err, post){
+    this.findOneAndUpdate(query, {$addToSet: {likes:req.userId}, $pull: {dislikes:req.userId, hearts: req.userId}}, function(err, post){
         if(err || !post){
           var ret = middleware.handleDbError(err, post);
           cb(null, ret);
@@ -100,11 +101,11 @@ PostSchema.statics.addToShakka = function (req, cb) {
         }
         cb(null, post);   
     });    
-}
+};
 
-PostSchema.statics.removeShakka = function (req, cb) {
+PostSchema.statics.removeLike = function (req, cb) {
     var query = { _id: req.body.id };
-    this.findOneAndUpdate(query, {$pull: {shakka:req.user}}, function(err, post){
+    this.findOneAndUpdate(query, {$pull: {likes:req.userId}}, function(err, post){
         if(err || !post){
           var ret = middleware.handleDbError(err, post);
           cb(null, ret);
@@ -112,11 +113,35 @@ PostSchema.statics.removeShakka = function (req, cb) {
         }
         cb(null, post);  
     });
-}
+};
+
+PostSchema.statics.addToDislike = function (req, cb) {
+    var query = { _id: req.body.id };
+    this.findOneAndUpdate(query, {$addToSet: {dislikes:req.userId}, $pull: {likes:req.userId, hearts: req.userId}}, function(err, post){
+        if(err || !post){
+            var ret = middleware.handleDbError(err, post);
+            cb(null, ret);
+            return;
+        }
+        cb(null, post);
+    });
+};
+
+PostSchema.statics.removeDislike = function (req, cb) {
+    var query = { _id: req.body.id };
+    this.findOneAndUpdate(query, {$pull: {dislikes:req.userId}}, function(err, post){
+        if(err || !post){
+            var ret = middleware.handleDbError(err, post);
+            cb(null, ret);
+            return;
+        }
+        cb(null, post);
+    });
+};
 
 PostSchema.statics.addToHeart = function (req, cb) {
     var query = { _id: req.body.id };
-    this.findOneAndUpdate(query, {$addToSet: {heart:req.user}}, function(err, post){
+    this.findOneAndUpdate(query, {$addToSet: {hearts:req.userId}, $pull: {likes:req.userId, dislikes: req.userId}}, function(err, post){
         if(err || !post){
           var ret = middleware.handleDbError(err, post);
           cb(null, ret);
@@ -124,11 +149,11 @@ PostSchema.statics.addToHeart = function (req, cb) {
         }
         cb(null, post);   
     });    
-}
+};
 
 PostSchema.statics.removeHeart = function (req, cb) {
     var query = { _id: req.body.id };
-    this.findOneAndUpdate(query, {$pull: {heart:req.user}}, function(err, post){
+    this.findOneAndUpdate(query, {$pull: {hearts:req.userId}}, function(err, post){
         if(err || !post){
           var ret = middleware.handleDbError(err, post);
           cb(null, ret);
@@ -136,7 +161,7 @@ PostSchema.statics.removeHeart = function (req, cb) {
         }
         cb(null, post);  
     });
-}
+};
 
 PostSchema.statics.addComment = function (req, cb) {
     var query = { _id: req.body.id };
@@ -149,7 +174,7 @@ PostSchema.statics.addComment = function (req, cb) {
             }
             cb(null, post);
         });
-}
+};
 
 PostSchema.statics.removeComment = function (req, cb) {
     console.log('post delete schema');
@@ -162,7 +187,7 @@ PostSchema.statics.removeComment = function (req, cb) {
         }
         cb(null, post);  
     });    
-}
+};
 
 var PostModel = mongoose.model('Post', PostSchema);
 module.exports = PostModel;

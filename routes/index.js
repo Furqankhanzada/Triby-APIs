@@ -34,7 +34,7 @@ var client = s3.createClient({
     secretAccessKey: global.AWS_SECRET_KEY
     // any other options are passed to new AWS.S3()
     // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Config.html#constructor-property
-  },
+  }
 });
 
 /* GET home page. */
