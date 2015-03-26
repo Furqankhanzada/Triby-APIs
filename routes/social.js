@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var middleware = require('./../middleware');
+var SideChat = require('./../models').SideChat;
 var Event = require('./../models').Event;
 var Biz = require('./../models').Biz;
 var Post = require('./../models').Post;
@@ -128,6 +129,10 @@ router.post('/comments', middleware.requiresUser, function(req, res) {
     }else if(type == 'biz'){
         Biz.addComment( req , function(err, biz) {
             res.send({"status":"success", "biz":biz});
+        });
+    }else if(type == 'sidechat'){
+        SideChat.addComment( req , function(err, chat) {
+            res.send({"status":"success", "sidechat":chat});
         });
     }else if(type == 'post'){
         Post.addComment( req , function(err, post) {

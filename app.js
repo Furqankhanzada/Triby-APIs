@@ -31,6 +31,7 @@ var events = require('./routes/events');
 var biz = require('./routes/biz');
 var posts = require('./routes/posts');
 var social = require('./routes/social');
+var sidechat = require('./routes/sidechat');
 
 
 var app = express();
@@ -62,6 +63,7 @@ app.use('/', events);
 app.use('/', biz);
 app.use('/', posts);
 app.use('/', social);
+app.use('/', sidechat);
 
 //app.use(cors());
 
