@@ -21,6 +21,22 @@ router.post('/sidechat', middleware.requiresUser, function(req, res) {
     })
 });
 
+router.get('/sidechat', middleware.requiresUser, function(req, res) {
+    SideChat.findByUserId(req.userId, req.body.user, function(err, chat) {
+        if (!err)  res.send({"status": "success", "sidechat": chat});
+        if (err) {
+            var sideChat = new SideChat();
+            sideChat.owner = req.userId;
+            sideChat.user = req.body.user;
+            sideChat.time = new Date();
+            sideChat.save(function (err) {
+                if(err) handleError(res, err);
+                if (!err)  res.send({"status": "success", "sidechat": sideChat});
+            })
+        }
+    })
+});
+
 function handleError(res, err){
     return res.send(500, err)
 }

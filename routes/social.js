@@ -20,6 +20,14 @@ router.post('/like', middleware.requiresUser, function(req, res) {
         Post.addToLike( req , function(err, post) {
             res.send({"status":"success", "post":post});
         });
+    }else if(type == 'postComments'){
+        Post.commentAddToLike( req , function(err, post) {
+            res.send({"status":"success", "post":post});
+        });
+    }else if(type == 'sideChatComments'){
+        SideChat.commentAddToLike( req , function(err, chat) {
+            res.send({"status":"success", "sidechat":chat});
+        });
     }else{
         res.send('Missing type parameter');
     }
@@ -38,6 +46,14 @@ router.put('/like', middleware.requiresUser, function(req, res) {
     }else if(type == 'post'){
         Post.removeLike( req , function(err, post) {
                 res.send({"status":"success", "post":post});
+        });
+    }else if(type == 'postComments'){
+        Post.commentRemoveLike( req , function(err, post) {
+            res.send({"status":"success", "post":post});
+        });
+    }else if(type == 'sideChatComments'){
+        SideChat.commentRemoveLike( req , function(err, chat) {
+            res.send({"status":"success", "sidechat":chat});
         });
     }else{
         res.send('Missing type parameter');
@@ -58,6 +74,14 @@ router.post('/dislike', middleware.requiresUser, function(req, res) {
         Post.addToDislike( req , function(err, post) {
             res.send({"status":"success", "post":post});
         });
+    }else if(type == 'postComments'){
+        Post.commentAddToDislike( req , function(err, post) {
+            res.send({"status":"success", "post":post});
+        });
+    }else if(type == 'sideChatComments'){
+        SideChat.commentAddToDislike( req , function(err, chat) {
+            res.send({"status":"success", "sidechat":chat});
+        });
     }else{
         res.send('Missing type parameter');
     }
@@ -76,6 +100,14 @@ router.delete('/dislike', middleware.requiresUser, function(req, res) {
     }else if(type == 'post'){
         Post.removeDislike( req , function(err, post) {
             res.send({"status":"success", "post":post});
+        });
+    }else if(type == 'postComments'){
+        Post.commentRemoveDislike( req , function(err, post) {
+            res.send({"status":"success", "post":post});
+        });
+    }else if(type == 'sideChatComments'){
+        SideChat.commentRemoveDislike( req , function(err, chat) {
+            res.send({"status":"success", "sidechat":chat});
         });
     }else{
         res.send('Missing type parameter');
@@ -96,6 +128,14 @@ router.post('/heart', middleware.requiresUser, function(req, res) {
         Post.addToHeart( req , function(err, post) {
             res.send({"status":"success", "post":post});
         });
+    }else if(type == 'postComments'){
+        Post.commentAddToHeart( req , function(err, post) {
+            res.send({"status":"success", "post":post});
+        });
+    }else if(type == 'sideChatComments'){
+        SideChat.commentAddToHeart( req , function(err, chat) {
+            res.send({"status":"success", "sidechat":chat});
+        });
     }else{
         res.send('Missing type parameter');
     }
@@ -114,6 +154,14 @@ router.delete('/heart', middleware.requiresUser, function(req, res) {
     }else if(type == 'post'){
         Post.removeHeart( req , function(err, post) {
             res.send({"status":"success", "post":post});
+        });
+    }else if(type == 'postComments'){
+        Post.commentRemoveHeart( req , function(err, post) {
+            res.send({"status":"success", "post":post});
+        });
+    }else if(type == 'sideChatComments'){
+        SideChat.commentRemoveHeart( req , function(err, chat) {
+            res.send({"status":"success", "sidechat":chat});
         });
     }else{
         res.send('Missing type parameter');
@@ -155,7 +203,6 @@ router.delete('/comments', middleware.requiresUser, function(req, res) {
             res.send({"status":"success", "biz":biz});
         });
     }else if(type == 'post'){
-        console.log('post delete');
         Post.removeComment( req , function(err, post) {
             res.send({"status":"success", "post":post});
         });

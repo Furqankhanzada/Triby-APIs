@@ -1,6 +1,5 @@
 var express = require('express');
 var router = express.Router();
-var bcrypt = require('bcrypt');
 var uuid = require('node-uuid');
 
 var mongoose = require('mongoose');
