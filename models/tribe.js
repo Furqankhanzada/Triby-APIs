@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var uuid = require('node-uuid');
+var Post = require('./post');
 var middleware = require('./../middleware');
 
 var mongoose = require('mongoose');
@@ -17,7 +18,7 @@ var TribeSchema = new Schema({
     rights: [Number],
     events: [String],
     bizs: [String],
-    posts: [String],
+    posts: [{type: Schema.Types.ObjectId, ref: 'Post'}],
     lastseen: [{"user":String, "time":Date}],
     pic: String
 });
@@ -119,16 +120,20 @@ TribeSchema.statics.removeMember = function (req, cb) {
 
 TribeSchema.statics.findById = function (id, cb) {
   var query = { _id: id };   
-  this.findOne(query, function(err, tribe){
+  this.findOne(query).populate('posts').exec(function(err, tribe){
     if(err || !tribe){
       var ret = middleware.handleDbError(err, tribe);
       cb(null, ret);
       return;
     }
-      
-	trb = tribe.toObject();
-    delete trb.__v;
-	cb(null, trb);  
+      Post.populate(tribe.posts, {
+          path: 'createdBy'
+      }, function (err, doc) {
+          tribe.posts = doc;
+          trb = tribe.toObject();
+          delete trb.__v;
+          cb(null, trb);
+      });
   });
 }
 

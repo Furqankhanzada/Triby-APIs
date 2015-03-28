@@ -29,7 +29,7 @@ var PostSchema = new Schema({
 
 PostSchema.statics.findById = function (id, cb) {
   var query = { _id: id };
-  this.findOne(query).populate('comments.user').exec(function(err, post){
+  this.findOne(query).populate('createdBy comments.user').exec(function(err, post){
       if(err || !post){
           var ret = middleware.handleDbError(err, post);
           cb(null, ret);
