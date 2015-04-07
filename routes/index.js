@@ -88,8 +88,10 @@ router.post('/uploads', multipartMiddleware, function(req, res){
       var aWidth, aHeight;
       if(aType=="POST"){
         prename = "post-";
-        aWidth = (fileInfo.width>600?600:fileInfo.width);
-        aWidth = (fileInfo.width>600?(600 + (600*Math.abs(fileInfo.width-fileInfo.height)/fileInfo.height)):fileInfo.height);
+//        aWidth = (fileInfo.width>600?600:fileInfo.width);
+//        aHeight = (fileInfo.width>600?(600 + (600*Math.abs(fileInfo.width-fileInfo.height)/fileInfo.height)):fileInfo.height);
+          aWidth = fileInfo.width;
+          aHeight = fileInfo.height;
       }
       else{
         prename = "thumb-";
