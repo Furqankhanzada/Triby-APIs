@@ -10,6 +10,17 @@ var Token = require('./../models').Token;
 var Feedback = require('./../models').Feedback;
 var Device = require('./../models').Device;
 
+
+// Get users from mobile number list
+router.get('/user/contacts', function(req, res) {
+    User.find({"type": "MOBILE","status":1}, function(err,users){
+        if(err)
+            res.send({"status":"error","message":err});
+        else
+            res.json({"status":"success","users":users});
+    });
+});
+
 // Get user
 router.get('/user/:username', middleware.requiresUser, function(req, res) {
     User.findByUserName(req.params.username , function(err, user) {
@@ -88,6 +99,7 @@ router.post('/user', function(req, res) {
           user.email = req.body.email;
           user.hashed_password = bcrypt.hashSync(req.body.password, salt);
           user.salt = salt;
+          user.name = req.body.name;
           user.firstname = req.body.firstname;
           user.lastname = req.body.lastname;
           user.city = req.body.city;
@@ -199,6 +211,7 @@ router.post('/user/confirm', function(req, res) {
   var code = req.body.code;
   var phone_number = req.body.mobilenumber;
   var username = req.body.username;
+
   
   Device.findOne({"username":username,"mobilenumber":phone_number,"code":code},function(err,aDevice){
     if(!aDevice){
@@ -206,6 +219,7 @@ router.post('/user/confirm', function(req, res) {
       return;
     }
     aDevice.status = 1;
+    aDevice.type = "MOBILE";
     aDevice.save(function(err,device2){
       if(err){
         res.json({"status":"error","message":err});
