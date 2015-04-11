@@ -12,7 +12,7 @@ var Device = require('./../models').Device;
 
 
 // Get users from mobile number list
-router.get('/user/contacts', function(req, res) {
+router.get('/user/mobile/contacts', function(req, res) {
     User.find({"type": "MOBILE","status":1}, function(err,users){
         if(err)
             res.send({"status":"error","message":err});
@@ -318,7 +318,7 @@ router.post('/user/facebook/contacts', middleware.requiresUser, function(req, re
 
   var contacts = req.body.contacts;
 
-  User.find({"username": {$in: contacts},"status":1}, function(err,users){
+  User.find({"status":1, $or: [{"type": "MOBILE"},  {"username": {$in: contacts}}]}, function(err,users){
     if(err)
       res.send({"status":"error","message":err});
     else
