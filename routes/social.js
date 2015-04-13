@@ -170,6 +170,7 @@ router.delete('/heart', middleware.requiresUser, function(req, res) {
 
 router.post('/comments', middleware.requiresUser, function(req, res) {
     var type = req.body.type;
+    if(req.url_file) req.body.pic = req.url_file;
     if(type == 'event'){
         Event.addComment( req , function(err, event) {
             res.send({"status":"success", "event":event});

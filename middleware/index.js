@@ -4,7 +4,7 @@ var Token = require('./../models/token');
 
 
 function requiresUser(req, res, next) {
-    
+
     Token.getUsername( req.headers.authorization , function(err, token) {
         if (err || !token){
             res.status(403).send("Forbidden");

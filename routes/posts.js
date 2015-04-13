@@ -11,12 +11,11 @@ router.post('/posts', middleware.requiresUser, function(req, res) {
     post.createdBy = req.userId;
     post.date = new Date();
     post.content = req.body.content;
-    post.pic = req.body.pic;
     post.parentType = req.body.parenttype;
     post.parentID = req.body.parentid;
+    if(req.url_file) post.pic = req.url_file;
     post.save(function () {
         req.postid = post._id;
-            
     	if(type == 'event'){
               Event.addPost( req , function(err, event) {
                   res.send({"status":"success", "event":event});
